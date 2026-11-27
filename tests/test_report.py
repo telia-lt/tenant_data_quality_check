@@ -5,7 +5,7 @@ from types import SimpleNamespace
 
 
 spec = importlib.util.spec_from_file_location(
-    "quality_report", Path(__file__).parents[1] / "tenant_data_quality" / "report.py"
+    "quality_report", Path(__file__).parents[1] / "tenant_data_quality_check" / "report.py"
 )
 report = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(report)

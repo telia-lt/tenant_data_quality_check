@@ -17,10 +17,10 @@ REQUIREMENT_LABELS = (
     "SolarWinds ID present",
     "Primary IPv4 present",
     "Primary IPv4 unique",
-    "Interface IP present",
-    "Tag present",
+    "At least one IP address on one of interfaces",
+    "At least one TAG per device",
     "Speed Mbps present",
-    "Active status",
+    "Device status is Active",
 )
 
 

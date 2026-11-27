@@ -2,7 +2,7 @@ from netbox.plugins import PluginConfig
 
 
 class TenantDataQualityConfig(PluginConfig):
-    name = "tenant_data_quality"
+    name = "tenant_data_quality_check"
     verbose_name = "Tenant Data Quality"
     description = "Data quality checks for tenant devices"
     version = "0.1.0"

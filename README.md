@@ -8,10 +8,10 @@ On the NetBox server, copy this directory to an accessible location, then instal
 it in NetBox's virtual environment:
 
 ```shell
-/opt/netbox/venv/bin/pip install /path/to/tenant-data-quality
+/opt/netbox/venv/bin/pip install /path/to/tenant_data_quality_check
 ```
 
-Add `"tenant_data_quality"` to `PLUGINS` in NetBox's `configuration.py` and
+Add `"tenant_data_quality_check"` to `PLUGINS` in NetBox's `configuration.py` and
 restart the NetBox web and worker services. Make the package installation
 persistent across upgrades or container rebuilds according to your deployment.
 No migrations or plugin-specific configuration are required.

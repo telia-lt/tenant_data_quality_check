@@ -22,7 +22,7 @@ def require_complete_visibility(queryset, user):
 @register_model_view(Tenant, "data_quality", path="data-quality")
 class TenantDataQualityView(ObjectView):
     queryset = Tenant.objects.all()
-    template_name = "tenant_data_quality/report.html"
+    template_name = "tenant_data_quality_check/report.html"
     tab = ViewTab(label="Data Quality", permission="tenancy.view_tenant")
     additional_permissions = (
         "dcim.view_device",

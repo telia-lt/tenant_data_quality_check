@@ -63,6 +63,26 @@ class ReportTests(unittest.TestCase):
         result = report.build_report([device(1, fields=fields)], 1, {1})
         self.assertEqual(result["total_issues"], 0)
 
+    def test_requirements_summary_counts_and_failures(self):
+        d1 = device(1, "192.0.2.1/24")
+        d2 = device(2, "192.0.2.2/24", fields={"PID": "123", "solarwinds_id": None, "speed_mbps": 100})
+        result = report.build_report([d1, d2], 2, {1, 2})
+
+        reqs = {r["name"]: r for r in result["requirements"]}
+        self.assertEqual(len(reqs), 9)
+
+        self.assertFalse(reqs["Single VRF"]["passed"])
+        self.assertEqual(reqs["Single VRF"]["result"], "0/1")
+        self.assertEqual(reqs["Single VRF"]["failures"][0]["detail"], "Found 2 VRFs.")
+
+        self.assertTrue(reqs["PID / LAN_PID present"]["passed"])
+        self.assertEqual(reqs["PID / LAN_PID present"]["result"], "2/2")
+        self.assertEqual(reqs["PID / LAN_PID present"]["failures"], [])
+
+        self.assertFalse(reqs["SolarWinds ID present"]["passed"])
+        self.assertEqual(reqs["SolarWinds ID present"]["result"], "1/2")
+        self.assertEqual([f["device"].pk for f in reqs["SolarWinds ID present"]["failures"]], [2])
+
 
 if __name__ == "__main__":
     unittest.main()

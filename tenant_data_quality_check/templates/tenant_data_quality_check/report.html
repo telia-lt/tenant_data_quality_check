@@ -18,27 +18,73 @@
   </div>
 
   <div class="card">
-    <h2 class="card-header" id="quality-issues-heading">Issues</h2>
-    {% if report.issues %}
-      <div class="table-responsive" tabindex="0" role="region" aria-labelledby="quality-issues-heading">
-        <table class="table table-hover">
-          <caption class="visually-hidden">Data quality issues</caption>
-          <thead>
-            <tr><th scope="col">Object</th><th scope="col">Failed check</th><th scope="col">Details</th></tr>
-          </thead>
-          <tbody>
-            {% for issue in report.issues %}
-              <tr>
-                <td>{% if issue.device %}<a href="{{ issue.device.get_absolute_url }}">{{ issue.device }}</a>{% else %}{{ object }}{% endif %}</td>
-                <td>{{ issue.check }}</td>
-                <td>{{ issue.detail }}</td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    {% else %}
-      <div class="card-body">No issues found.</div>
-    {% endif %}
+    <h2 class="card-header" id="quality-requirements-heading">Requirements</h2>
+    <div class="table-responsive" tabindex="0" role="region" aria-labelledby="quality-requirements-heading">
+      <table class="table table-hover mb-0">
+        <caption class="visually-hidden">Data quality requirements</caption>
+        <thead>
+          <tr>
+            <th scope="col">Requirements</th>
+            <th scope="col">Status</th>
+            <th scope="col">Result</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for req in report.requirements %}
+            <tr>
+              <td>
+                <button
+                  type="button"
+                  class="btn btn-link p-0 text-decoration-none text-reset req-toggle d-inline-flex align-items-center"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#req-details-{{ forloop.counter }}"
+                  aria-expanded="false"
+                  aria-controls="req-details-{{ forloop.counter }}"
+                >
+                  <span class="req-caret" aria-hidden="true">&#9656;</span>
+                  <span>{{ req.name }}</span>
+                </button>
+              </td>
+              <td>{% if req.passed %}✅{% else %}❌{% endif %}</td>
+              <td>{{ req.result }}</td>
+            </tr>
+            <tr class="collapse" id="req-details-{{ forloop.counter }}">
+              <td colspan="3" class="bg-body-tertiary ps-4">
+                {% if req.failures %}
+                  <ul class="mb-0 ps-3">
+                    {% for failure in req.failures %}
+                      <li>
+                        {% if failure.device %}
+                          <a href="{{ failure.device.get_absolute_url }}">{{ failure.device }}</a>{% if failure.detail %} — {{ failure.detail }}{% endif %}
+                        {% else %}
+                          {{ object }}{% if failure.detail %} — {{ failure.detail }}{% endif %}
+                        {% endif %}
+                      </li>
+                    {% endfor %}
+                  </ul>
+                {% elif req.is_tenant_check %}
+                  <span class="text-muted">Tenant has 1 VRF.</span>
+                {% elif report.total_devices == 0 %}
+                  <span class="text-muted">No devices assigned to this tenant.</span>
+                {% else %}
+                  <span class="text-muted">All {{ report.total_devices }} devices meet this requirement.</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
+
+  <style>
+    .req-caret {
+      display: inline-block;
+      transition: transform 0.15s ease;
+      margin-right: 0.4rem;
+    }
+    .req-toggle[aria-expanded="true"] .req-caret {
+      transform: rotate(90deg);
+    }
+  </style>
 {% endblock %}

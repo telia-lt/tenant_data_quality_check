@@ -12,6 +12,17 @@ DEVICE_CHECKS = (
     "Status is active",
 )
 
+REQUIREMENT_LABELS = (
+    "PID / LAN_PID present",
+    "SolarWinds ID present",
+    "Primary IPv4 present",
+    "Primary IPv4 unique",
+    "Interface IP present",
+    "Tag present",
+    "Speed Mbps present",
+    "Active status",
+)
+
 
 def has_value(value):
     if value is None:
@@ -29,12 +40,18 @@ def build_report(devices, vrf_count, devices_with_interface_ip):
         if device.primary_ip4_id
     )
     issues = []
-    if vrf_count != 1:
+    vrf_passed = vrf_count == 1
+    vrf_failures = []
+    if not vrf_passed:
+        detail = f"Found {vrf_count} VRFs."
         issues.append({
             "device": None,
             "check": "Tenant has exactly one VRF",
-            "detail": f"Found {vrf_count} VRFs.",
+            "detail": detail,
         })
+        vrf_failures.append({"device": None, "detail": detail})
+
+    failures_by_check = [[] for _ in DEVICE_CHECKS]
 
     for device in devices:
         fields = device.custom_field_data or {}
@@ -49,22 +66,52 @@ def build_report(devices, vrf_count, devices_with_interface_ip):
             has_value(fields.get("speed_mbps")),
             device.status == "active",
         )
-        for label, passed in zip(DEVICE_CHECKS, checks):
+        for idx, (label, passed) in enumerate(zip(DEVICE_CHECKS, checks)):
             if not passed:
+                detail = f"Duplicate IP: {primary_ip}" if label == DEVICE_CHECKS[3] else ""
                 issues.append({
                     "device": device,
                     "check": label,
-                    "detail": f"Duplicate IP: {primary_ip}" if label == DEVICE_CHECKS[3] else "",
+                    "detail": detail,
+                })
+                failures_by_check[idx].append({
+                    "device": device,
+                    "detail": detail,
                 })
 
-    total_checks = 1 + len(devices) * len(DEVICE_CHECKS)
+    total_devices = len(devices)
+    requirements = [
+        {
+            "name": "Single VRF",
+            "passed": vrf_passed,
+            "passed_count": 1 if vrf_passed else 0,
+            "total_count": 1,
+            "result": f"{1 if vrf_passed else 0}/1",
+            "failures": vrf_failures,
+            "is_tenant_check": True,
+        }
+    ]
+    for req_name, failures in zip(REQUIREMENT_LABELS, failures_by_check):
+        passed_count = total_devices - len(failures)
+        requirements.append({
+            "name": req_name,
+            "passed": len(failures) == 0,
+            "passed_count": passed_count,
+            "total_count": total_devices,
+            "result": f"{passed_count}/{total_devices}",
+            "failures": failures,
+            "is_tenant_check": False,
+        })
+
+    total_checks = 1 + total_devices * len(DEVICE_CHECKS)
     passed_checks = total_checks - len(issues)
     return {
-        "total_devices": len(devices),
+        "total_devices": total_devices,
         "total_issues": len(issues),
         "total_checks": total_checks,
         "passed_checks": passed_checks,
         "compliance_score": passed_checks * 100 / total_checks,
         "issues": issues,
+        "requirements": requirements,
         "vrf_count": vrf_count,
     }

@@ -1,0 +1,44 @@
+{% extends 'generic/object.html' %}
+
+{% block content %}
+  <div class="card mb-3">
+    <h2 class="card-header">Data Quality Summary</h2>
+    <table class="table attr-table">
+      <caption class="visually-hidden">Data Quality Summary</caption>
+      <tbody>
+        <tr><th scope="row">Tenant Name</th><td>{{ object.name }}</td></tr>
+        <tr><th scope="row">Total Devices</th><td>{{ report.total_devices }}</td></tr>
+        <tr><th scope="row">Total Issues</th><td>{{ report.total_issues }}</td></tr>
+        <tr>
+          <th scope="row">Compliance Score</th>
+          <td>{{ report.compliance_score|floatformat:2 }}% ({{ report.passed_checks }} / {{ report.total_checks }} checks)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2 class="card-header" id="quality-issues-heading">Issues</h2>
+    {% if report.issues %}
+      <div class="table-responsive" tabindex="0" role="region" aria-labelledby="quality-issues-heading">
+        <table class="table table-hover">
+          <caption class="visually-hidden">Data quality issues</caption>
+          <thead>
+            <tr><th scope="col">Object</th><th scope="col">Failed check</th><th scope="col">Details</th></tr>
+          </thead>
+          <tbody>
+            {% for issue in report.issues %}
+              <tr>
+                <td>{% if issue.device %}<a href="{{ issue.device.get_absolute_url }}">{{ issue.device }}</a>{% else %}{{ object }}{% endif %}</td>
+                <td>{{ issue.check }}</td>
+                <td>{{ issue.detail }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="card-body">No issues found.</div>
+    {% endif %}
+  </div>
+{% endblock %}

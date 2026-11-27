@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "netbox-tenant-data-quality"
+version = "0.1.0"
+description = "Tenant data quality report for NetBox"
+requires-python = ">=3.10"
+
+[tool.setuptools.packages.find]
+include = ["tenant_data_quality*"]
+
+[tool.setuptools.package-data]
+tenant_data_quality = ["templates/tenant_data_quality/*.html"]
